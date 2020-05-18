@@ -1,8 +1,6 @@
 /**
    Authorization.ino
-
     Created on: 09.12.2015
-
 */
 
 #include <Arduino.h>
@@ -15,13 +13,18 @@
 #include <WiFiClient.h>
 #include <ArduinoJson.h>
 int ledpin = D0;
+int buzzpin = D1;
 ESP8266WiFiMulti WiFiMulti;
 char apiurl[] = "http://192.168.1.50/api/job";// change the ip address to Raspberry pi IP Address
 char authkey[] = "401D82B1BD4B47D6817DBD5C8A6AD297";// find authkey in octoprint application keys in settings
-char id[] = "manu";//your wifi 
+char id[] = "manu";//your wifi
 char password[] = "ambalathil1234"; //your password
+int state = true;
 void setup() {
-  pinMode(ledpin,OUTPUT);
+  pinMode(ledpin, OUTPUT);
+  pinMode(buzzpin, OUTPUT);
+  digitalWrite(buzzpin , 0);
+  
   const int jsonSize = JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(2)
                        + JSON_OBJECT_SIZE(1);
 
@@ -78,15 +81,24 @@ void loop() {
         if (payload.indexOf("Printing") == -1)
         {
           digitalWrite(ledpin , 0);
+          
+
+          if (state == true)
+          {
+            digitalWrite(buzzpin , 1);
+            delay(500);
+            digitalWrite(buzzpin , 0);
+            state = false;
+          }
 
         }
         else
         {
           digitalWrite(ledpin , 1);
-           Serial.print("Printing");
-
+          Serial.print("Printing");
+          state = true;
         }
-delay(5000);
+        delay(5000);
       }
     } else {
       Serial.printf("[HTTP] GET... failed, error: %s\n", http.errorToString(httpCode).c_str());
